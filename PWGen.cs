@@ -5,9 +5,10 @@ namespace RandomPWGen
     internal class PWGen
     {
         private readonly int NumOfPWs;
+        private readonly string characters;
 
-        // METHOD: ThreadsTasks
-        // PURPOSE: Instantiate the Threads and Tasks class with the cmd arguments
+        // METHOD: PWGen
+        // PURPOSE: Instantiate the PasswordGen class with the cmdline arguments
         // RETURNS: NONE
         public PWGen(string[] args)
         {
@@ -19,19 +20,30 @@ namespace RandomPWGen
             {
                 NumOfPWs = int.Parse(args[0]);
             }
+            characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+=-{}[]|:;<>?,./";
         }
 
-        // METHOD: GeneratePWs
-        // PURPOSE: Generates the new passwords to the CMDline
-        // RETURNS: NONE
-        public void GeneratePWs()
+        //METHOD: GeneratePWs
+        //PURPOSE: Generates a new password from a given set of characters
+        //RETURNS: string password
+        public string GeneratePWs()
         {
-            Console.WriteLine("Potential Passwords: \n");
-            for (int i = 0; i < NumOfPWs; i++)
+            string password = "";
+            Random random = new Random();
+            for (int i = 0; i < 16; i++)
             {
-                Guid randomPassword = Guid.NewGuid();
-                Console.WriteLine("\tPassword #{0}: {1}", i, randomPassword.ToString());
+                password += characters[random.Next(characters.Length)];
             }
+            return password;
+        }
+
+        //METHOD: GeneratePWsGUID
+        //PURPOSE: Generates the new passwords to the CMDline
+        //RETURNS: NONE
+        public string GeneratePWsGUID()
+        {
+            Guid randomPassword = Guid.NewGuid();
+            return randomPassword.ToString();
         }
     }
 }
