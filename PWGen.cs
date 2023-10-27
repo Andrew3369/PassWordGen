@@ -42,7 +42,7 @@ namespace RandomPWGen
                 if (response == "1")
                 {
                     // Set password
-                    string password = GeneratePWs();
+                    string password = GeneratePWsGUID();
                     Console.WriteLine("\tPassword: {0}\n", password);
                     Console.WriteLine("\tWould you like to copy the password to the clipboard?\n");
 
