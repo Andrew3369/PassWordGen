@@ -8,9 +8,11 @@ namespace RandomPWGen
 {
     internal class PassGen
     {
-        static void Main(string[] args)
+        //static void Main(string[] args)
+        static void Main()
         {
-            PWGen pWGen = new PWGen(args);
+            //PWGen pWGen = new PWGen(args);
+            PWGen pWGen = new PWGen();
             Console.WriteLine("Welcome to Password Generator!\n");
 
             // Start Program

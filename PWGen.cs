@@ -5,6 +5,7 @@
 using System;
 using System.Windows;
 using System.Threading;
+using System.Linq;
 
 namespace RandomPWGen
 {
@@ -15,7 +16,8 @@ namespace RandomPWGen
         // METHOD: PWGen
         // PURPOSE: Instantiate the PasswordGen class with the cmdline arguments
         // RETURNS: NONE
-        public PWGen(string[] args)
+        //public PWGen(string[] args)
+        public PWGen()
         {
             characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+=-{}[]|:;<>?,./";
         }
@@ -31,90 +33,91 @@ namespace RandomPWGen
                 Console.WriteLine
                 (
                 "1. Create a Unique Password using GUID Generator (36 Letters in Length, Very Secure)\n" +
-                "2. Create a Unique Password using a already set Character determination (16 Letters in Length, Less Secure than GUID)\n" +
+                "2. Create a Unique Password using a already set Character determination (16 Letters in Length, Less Secure)\n" +
                 "3. Exit\n"
                 );
 
                 // User selection
                 string response = Console.ReadLine();
+                int num = Int16.Parse(response);
+                string password = "";
 
-                // Password Generator from GUID
-                if (response == "1")
+                switch (num)
                 {
-                    // Set password
-                    string password = GeneratePWsGUID();
-                    Console.WriteLine("\tPassword: {0}\n", password);
-                    Console.WriteLine("\tWould you like to copy the password to the clipboard?\n");
+                    case 1:
+                        Thread doThing = new Thread(() => password = GeneratePWsGUID());
+                        doThing.Start();
+                        doThing.Join();
 
-                    response = Console.ReadLine();
+                        Console.WriteLine($"\tPassword: {password}\n");
+                        Console.WriteLine("\tWould you like to copy the password to the clipboard?\n\t Yes or No?\n\t");
 
-                    // If input is yes, copy to clipboard
-                    if (response == "Y" || response == "y" || response == "yes" || response == "Yes")
-                    {
-                        Thread thread = new Thread(() => Clipboard.SetText(password));
-                        Console.WriteLine("\tPassword Copied to Clipboard!\n");
-                        thread.SetApartmentState(ApartmentState.STA);
-                        thread.Start();
-                        thread.Join();
-                    }
+                        response = Console.ReadLine();
 
-                    // "No" input, do not copy to clipboard
-                    else if (response == "N" || response == "n" || response == "No" || response == "no")
-                    {
-                        Console.WriteLine("\tPassword Not Copied to Clipboard!\n");
-                    }
+                        // If input is yes, copy to clipboard
+                        if (response == "Y" || response == "y" || response == "yes" || response == "Yes")
+                        {
+                            Thread thread = new Thread(() => Clipboard.SetText(password));
+                            Console.WriteLine("\tPassword Copied to Clipboard!\n");
+                            thread.SetApartmentState(ApartmentState.STA);
+                            thread.Start();
+                            thread.Join();
+                        }
 
-                    // Invalid Options recieved
-                    else
-                    {
-                        Console.WriteLine("\tInvalid Response!\n");
-                    }
-                }
+                        // "No" input, do not copy to clipboard
+                        else if (response == "N" || response == "n" || response == "No" || response == "no")
+                        {
+                            Console.WriteLine("\tPassword Not Copied to Clipboard!\n");
+                        }
 
-                // Password Generator from Given Set of Characters
-                else if (response == "2")
-                {
-                    // Set password
-                    string password = GeneratePWs();
-                    Console.WriteLine("\tPassword: {0}\n", password);
-                    Console.WriteLine("\tWould you like to copy the password to the clipboard?\n");
-                    response = Console.ReadLine();
+                        // Invalid Options recieved
+                        else
+                        {
+                            Console.WriteLine("\tInvalid Response!\n");
+                        }
+                        break;
 
-                    // If input is yes, copy to clipboard
-                    if (response == "Y" || response == "y" || response == "yes" || response == "Yes")
-                    {
-                        Thread thread = new Thread(() => Clipboard.SetText(password));
-                        //Clipboard.SetText(pWGen.GeneratePWs());
-                        Console.WriteLine("\tPassword Copied to Clipboard!\n");
-                        thread.SetApartmentState(ApartmentState.STA);
-                        thread.Start();
-                        thread.Join();
-                    }
+                    case 2:
+                        // Set password
+                        Thread doThingAgain = new Thread(() => password = GeneratePWs());
+                        doThingAgain.Start();
+                        doThingAgain.Join();
+                        
+                        Console.WriteLine($"\tPassword: {password}\n");
+                        Console.WriteLine("\tWould you like to copy the password to the clipboard?\n\t Yes or No?\n\t");
+                        response = Console.ReadLine();
 
-                    // "No" input, do not copy to clipboard
-                    else if (response == "N" || response == "n" || response == "No" || response == "no")
-                    {
-                        Console.WriteLine("\tPassword Not Copied to Clipboard!\n");
-                    }
+                        // If input is yes, copy to clipboard
+                        if (response == "Y" || response == "y" || response == "yes" || response == "Yes")
+                        {
+                            Thread thread = new Thread(() => Clipboard.SetText(password));
+                            //Clipboard.SetText(pWGen.GeneratePWs());
+                            Console.WriteLine("\tPassword Copied to Clipboard!\n");
+                            thread.SetApartmentState(ApartmentState.STA);
+                            thread.Start();
+                            thread.Join();
+                        }
 
-                    // Invalid Options recieved
-                    else
-                    {
-                        Console.WriteLine("\tInvalid Response!\n");
-                    }
-                }
+                        // "No" input, do not copy to clipboard
+                        else if (response == "N" || response == "n" || response == "No" || response == "no")
+                        {
+                            Console.WriteLine("\tPassword Not Copied to Clipboard!\n");
+                        }
 
-                // Exit
-                else if (response == "3")
-                {
-                    Console.WriteLine("Exiting...");
-                    break;
-                }
+                        // Invalid Options recieved
+                        else
+                        {
+                            Console.WriteLine("\tInvalid Response!\n");
+                        }
+                        break;
 
-                // If 1 or 2 wasnt selected
-                else
-                {
-                    Console.WriteLine("Select One of the Options Above\nExiting...");
+                    case 3:
+                        Console.WriteLine("Exiting...");
+                        return;
+
+                    default:
+                        Console.WriteLine("Select One of the Options Above\n");
+                        break;
                 }
             }
         }
