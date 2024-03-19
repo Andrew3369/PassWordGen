@@ -49,32 +49,8 @@ namespace RandomPWGen
                         doThing.Start();
                         doThing.Join();
 
-                        Console.WriteLine($"\tPassword: {password}\n");
                         Console.WriteLine("\tWould you like to copy the password to the clipboard?\n\t Yes or No?\n\t");
-
-                        response = Console.ReadLine();
-
-                        // If input is yes, copy to clipboard
-                        if (response == "Y" || response == "y" || response == "yes" || response == "Yes")
-                        {
-                            Thread thread = new Thread(() => Clipboard.SetText(password));
-                            Console.WriteLine("\tPassword Copied to Clipboard!\n");
-                            thread.SetApartmentState(ApartmentState.STA);
-                            thread.Start();
-                            thread.Join();
-                        }
-
-                        // "No" input, do not copy to clipboard
-                        else if (response == "N" || response == "n" || response == "No" || response == "no")
-                        {
-                            Console.WriteLine("\tPassword Not Copied to Clipboard!\n");
-                        }
-
-                        // Invalid Options recieved
-                        else
-                        {
-                            Console.WriteLine("\tInvalid Response!\n");
-                        }
+                        CopyToClip(password);
                         break;
 
                     case 2:
@@ -83,37 +59,21 @@ namespace RandomPWGen
                         doThingAgain.Start();
                         doThingAgain.Join();
                         
-                        Console.WriteLine($"\tPassword: {password}\n");
+                        //Console.WriteLine($"\tPassword: {password}\n");
                         Console.WriteLine("\tWould you like to copy the password to the clipboard?\n\t Yes or No?\n\t");
-                        response = Console.ReadLine();
-
-                        // If input is yes, copy to clipboard
-                        if (response == "Y" || response == "y" || response == "yes" || response == "Yes")
-                        {
-                            Thread thread = new Thread(() => Clipboard.SetText(password));
-                            //Clipboard.SetText(pWGen.GeneratePWs());
-                            Console.WriteLine("\tPassword Copied to Clipboard!\n");
-                            thread.SetApartmentState(ApartmentState.STA);
-                            thread.Start();
-                            thread.Join();
-                        }
-
-                        // "No" input, do not copy to clipboard
-                        else if (response == "N" || response == "n" || response == "No" || response == "no")
-                        {
-                            Console.WriteLine("\tPassword Not Copied to Clipboard!\n");
-                        }
-
-                        // Invalid Options recieved
-                        else
-                        {
-                            Console.WriteLine("\tInvalid Response!\n");
-                        }
+                        CopyToClip(password);
                         break;
 
                     case 3:
+                        Thread doThingAGAIN = new Thread(() => password = GenerateMix());
+                        doThingAGAIN.Start();
+                        doThingAGAIN.Join();
+                        CopyToClip(password);
+                        break;
+
+                    case 4:
                         Console.WriteLine("Exiting...");
-                        return;
+                        break;
 
                     default:
                         Console.WriteLine("Select One of the Options Above\n");
@@ -136,6 +96,23 @@ namespace RandomPWGen
             return password;
         }
 
+        //METHOD: GenerateBoth
+        //PURPOSE: Generates the new passwords to the CMDline
+        //RETURNS: string randomPassword
+        public string GenerateMix()
+        {
+            Random random = new Random();
+            Guid randomGUID = Guid.NewGuid();
+            string tempHolder = randomGUID.ToString();
+            string password = "";
+            for (int i = 0; i < 16; i++)
+            {
+                password += characters[random.Next(characters.Length)];
+                password += tempHolder[random.Next(tempHolder.Length)];
+            }
+            return password;
+        }
+
         //METHOD: GeneratePWsGUID
         //PURPOSE: Generates the new passwords to the CMDline
         //RETURNS: string randomPassword
@@ -143,6 +120,39 @@ namespace RandomPWGen
         {
             Guid randomPassword = Guid.NewGuid();
             return randomPassword.ToString();
+        }
+
+        //METHOD: CopyToClip
+        //PURPOSE: Copies the password passed through onto the clipboard
+        //RETURNS: none (void)
+        public void CopyToClip(string password)
+        {
+            Console.WriteLine($"\tYour Password {password}\n");
+            Console.WriteLine("\tWould you like to copy the password to the clipboard?\n\t Yes or No?\n\t");
+            string response = Console.ReadLine();
+
+            // If input is yes, copy to clipboard
+            if (response == "Y" || response == "y" || response == "yes" || response == "Yes")
+            {
+                Thread thread = new Thread(() => Clipboard.SetText(password));
+                //Clipboard.SetText(pWGen.GeneratePWs());
+                Console.WriteLine("\tPassword Copied to Clipboard!\n");
+                thread.SetApartmentState(ApartmentState.STA);
+                thread.Start();
+                thread.Join();
+            }
+
+            // "No" input, do not copy to clipboard
+            else if (response == "N" || response == "n" || response == "No" || response == "no")
+            {
+                Console.WriteLine("\tPassword Not Copied to Clipboard!\n");
+            }
+
+            // Invalid Options recieved
+            else
+            {
+                Console.WriteLine("\tInvalid Response!\n");
+            }
         }
     }
 }
