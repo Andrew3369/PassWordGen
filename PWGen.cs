@@ -5,7 +5,7 @@
 using System;
 using System.Windows;
 using System.Threading;
-using System.Linq;
+using System.Security.Cryptography;
 
 namespace RandomPWGen
 {
@@ -65,15 +65,22 @@ namespace RandomPWGen
                         break;
 
                     case 3:
-                        Thread doThingAGAIN = new Thread(() => password = GenerateMix());
-                        doThingAGAIN.Start();
-                        doThingAGAIN.Join();
+                        Thread mixture = new Thread(() => password = GenerateMix());
+                        mixture.Start();
+                        mixture.Join();
                         CopyToClip(password);
                         break;
 
                     case 4:
-                        Console.WriteLine("Exiting...");
+                        Thread Cryptic = new Thread(() => password = GeneratePWsCrypt());
+                        Cryptic.Start();
+                        Cryptic.Join();
+                        CopyToClip(password);
                         break;
+
+                    case 5:
+                        Console.WriteLine("Exiting...");
+                        return;
 
                     default:
                         Console.WriteLine("Select One of the Options Above\n");
@@ -87,13 +94,21 @@ namespace RandomPWGen
         //RETURNS: string password
         public string GeneratePWs()
         {
-            string password = "";
-            Random random = new Random();
-            for (int i = 0; i < 16; i++)
+            try
             {
-                password += characters[random.Next(characters.Length)];
+                string password = "";
+                Random random = new Random();
+                for (int i = 0; i < 16; i++)
+                {
+                    password += characters[random.Next(characters.Length)];
+                }
+                return password;
             }
-            return password;
+            catch (Exception e) 
+            {
+                Console.WriteLine("");
+                return "";
+            }
         }
 
         //METHOD: GenerateBoth
@@ -101,16 +116,24 @@ namespace RandomPWGen
         //RETURNS: string randomPassword
         public string GenerateMix()
         {
-            Random random = new Random();
-            Guid randomGUID = Guid.NewGuid();
-            string tempHolder = randomGUID.ToString();
-            string password = "";
-            for (int i = 0; i < 16; i++)
+            try
             {
-                password += characters[random.Next(characters.Length)];
-                password += tempHolder[random.Next(tempHolder.Length)];
+                Random random = new Random();
+                Guid randomGUID = Guid.NewGuid();
+                string tempHolder = randomGUID.ToString();
+                string password = "";
+                for (int i = 0; i < 16; i++)
+                {
+                    password += characters[random.Next(characters.Length)];
+                    password += tempHolder[random.Next(tempHolder.Length)];
+                }
+                return password;
             }
-            return password;
+            catch (Exception ex) 
+            {
+                Console.WriteLine(ex.Message);
+                return "";
+            }
         }
 
         //METHOD: GeneratePWsGUID
@@ -123,7 +146,7 @@ namespace RandomPWGen
         }
 
         //METHOD: CopyToClip
-        //PURPOSE: Copies the password passed through onto the clipboard
+        //PURPOSE: Copies the password and passed through onto the clipboard
         //RETURNS: none (void)
         public void CopyToClip(string password)
         {
@@ -134,12 +157,18 @@ namespace RandomPWGen
             // If input is yes, copy to clipboard
             if (response == "Y" || response == "y" || response == "yes" || response == "Yes")
             {
-                Thread thread = new Thread(() => Clipboard.SetText(password));
-                //Clipboard.SetText(pWGen.GeneratePWs());
-                Console.WriteLine("\tPassword Copied to Clipboard!\n");
-                thread.SetApartmentState(ApartmentState.STA);
-                thread.Start();
-                thread.Join();
+                try
+                {
+                    Thread thread = new Thread(() => Clipboard.SetText(password));
+                    Console.WriteLine("\tPassword Copied to Clipboard!\n");
+                    thread.SetApartmentState(ApartmentState.STA);
+                    thread.Start();
+                    thread.Join();
+                }
+                catch 
+                {
+                    Console.WriteLine("Error copying to clipboard\n");
+                }
             }
 
             // "No" input, do not copy to clipboard
@@ -152,6 +181,27 @@ namespace RandomPWGen
             else
             {
                 Console.WriteLine("\tInvalid Response!\n");
+            }
+        }
+
+        // Using Cryptography to generate a password
+        private string GeneratePWsCrypt()
+        {
+            try
+            {
+                using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
+                {
+                    byte[] tokenData = new byte[16];
+                    rng.GetBytes(tokenData);
+                    string password = Convert.ToBase64String(tokenData);
+                    Console.WriteLine(password);
+                    return password;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return "";
             }
         }
     }
