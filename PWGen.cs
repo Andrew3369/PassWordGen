@@ -7,6 +7,7 @@ using System.Windows;
 using System.Threading;
 using System.Security.Cryptography;
 using System.Collections.Generic;
+using System.IO;
 
 namespace RandomPWGen
 {
@@ -17,27 +18,29 @@ namespace RandomPWGen
 
         // Documents Folder
         private readonly string documentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        // File name
-
+        private readonly string fileName;
+        private readonly string filePath;
 
         // Cryptography Related Fields
         //private const string encryptionKey = "";
         //private const string encryptionIV = "";
         //private const string filePath = "";
 
-
-        // TODO: Implement a way to store private information and then write to a enc file, ask for email or username first
         // Data structure to hold private information
-        //private Dictionary<string, string> privateInfo = new Dictionary<string, string>();
+        private Dictionary<string, string> privateInfo = new Dictionary<string, string>();
 
 
         // METHOD: PWGen
         // PURPOSE: Instantiate the PasswordGen class with the cmdline arguments
         // RETURNS: NONE
-        //public PWGen()
         public PWGen()
         {
-            characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+=-{}[]|:;<>?,./";
+            characters = "abcdefghijklmnopqrstuvwxyz" +
+                         "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+                         "0123456789!@#$%^&*()_+=-{}" +
+                         "[]|:;<>?,./";
+            fileName = "passwords.txt";
+            filePath = documentsFolder + "\\" + fileName;
         }
 
         //METHOD: PWGenMenu
@@ -155,8 +158,7 @@ namespace RandomPWGen
         //RETURNS: string randomPassword
         public string GeneratePWsGUID()
         {
-            Guid randomPassword = Guid.NewGuid();
-            return randomPassword.ToString();
+            return Guid.NewGuid().ToString();
         }
 
         //METHOD: CopyToClip
@@ -167,7 +169,6 @@ namespace RandomPWGen
             Console.WriteLine($"\tYour Password {password}\n");
             Console.WriteLine("\tWould you like to copy the password to the clipboard?\n\t Yes or No?\n\t");
             string response = Console.ReadLine();
-
 
             // If input is yes, copy to clipboard
             switch (response)
@@ -223,10 +224,98 @@ namespace RandomPWGen
         }
 
 
-        //private void WriteFile(string content, string password)
-        //{
+        private class CryptographyClass
+        {
+            private readonly string documentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            private readonly string fileName;
+            private readonly string filePath;
 
-        //}
+            // Cryptography Related Fields
+            //private const string encryptionKey = "";
+            //private const string encryptionIV = "";
+            //private const string filePath = "";
 
+            // Data structure to hold private information
+            private Dictionary<string, string> privateInfo = new Dictionary<string, string>();
+
+            public CryptographyClass()
+            {
+                filePath = documentsFolder + "\\" + fileName;
+            }
+            public void WritePasswordsToFile(Dictionary<string, string> passwords)
+            {
+                using (StreamWriter writer = new StreamWriter(fileName))
+                {
+                    foreach (var pair in passwords)
+                    {
+                        string encryptedPassword = EncryptString(pair.Value);
+                        writer.WriteLine($"Username or email: {pair.Key}");
+                        writer.WriteLine($"PW: {encryptedPassword}");
+                    }
+                }
+            }
+
+            public Dictionary<string, string> ReadPasswordsFromFile()
+            {
+                Dictionary<string, string> decryptedPasswords = new Dictionary<string, string>();
+                using (StreamReader reader = new StreamReader(fileName))
+                {
+                    while (!reader.EndOfStream)
+                    {
+                        string usernameOrEmail = reader.ReadLine().Substring("Username or email: ".Length);
+                        string encryptedPassword = reader.ReadLine().Substring("PW: ".Length);
+                        string decryptedPassword = DecryptString(encryptedPassword);
+                        decryptedPasswords.Add(usernameOrEmail, decryptedPassword);
+                    }
+                }
+                return decryptedPasswords;
+            }
+
+            private string EncryptString(string plainText)
+            {
+                using (Aes aesAlg = Aes.Create())
+                {
+                    byte[] key = aesAlg.Key;
+                    byte[] iv = aesAlg.IV;
+                    ICryptoTransform encryptor = aesAlg.CreateEncryptor(key, iv);
+
+                    byte[] encryptedBytes;
+                    using (MemoryStream msEncrypt = new MemoryStream())
+                    {
+                        using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+                        {
+                            using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
+                            {
+                                swEncrypt.Write(plainText);
+                            }
+                            encryptedBytes = msEncrypt.ToArray();
+                        }
+                    }
+                    return Convert.ToBase64String(encryptedBytes);
+                }
+            }
+
+            private string DecryptString(string encryptedText)
+            {
+                byte[] encryptedBytes = Convert.FromBase64String(encryptedText);
+                using (Aes aesAlg = Aes.Create())
+                {
+                    byte[] key = aesAlg.Key;
+                    byte[] iv = aesAlg.IV;
+                    ICryptoTransform decryptor = aesAlg.CreateDecryptor(key, iv);
+
+                    using (MemoryStream msDecrypt = new MemoryStream(encryptedBytes))
+                    {
+                        using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+                        {
+                            using (StreamReader srDecrypt = new StreamReader(csDecrypt))
+                            {
+                                return srDecrypt.ReadToEnd();
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

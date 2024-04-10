@@ -4,6 +4,7 @@
 
 using System;
 
+
 namespace RandomPWGen
 {
     internal class PassGen
