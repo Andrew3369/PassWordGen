@@ -6,17 +6,35 @@ using System;
 using System.Windows;
 using System.Threading;
 using System.Security.Cryptography;
+using System.Collections.Generic;
 
 namespace RandomPWGen
 {
     internal class PWGen
     {
+        // string of char
         private readonly string characters;
+
+        // Documents Folder
+        private readonly string documentsFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        // File name
+
+
+        // Cryptography Related Fields
+        //private const string encryptionKey = "";
+        //private const string encryptionIV = "";
+        //private const string filePath = "";
+
+
+        // TODO: Implement a way to store private information and then write to a enc file, ask for email or username first
+        // Data structure to hold private information
+        //private Dictionary<string, string> privateInfo = new Dictionary<string, string>();
+
 
         // METHOD: PWGen
         // PURPOSE: Instantiate the PasswordGen class with the cmdline arguments
         // RETURNS: NONE
-        //public PWGen(string[] args)
+        //public PWGen()
         public PWGen()
         {
             characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+=-{}[]|:;<>?,./";
@@ -34,7 +52,9 @@ namespace RandomPWGen
                 (
                 "1. Create a Unique Password using GUID Generator (36 Letters in Length, Very Secure)\n" +
                 "2. Create a Unique Password using a already set Character determination (16 Letters in Length, Less Secure)\n" +
-                "3. Exit\n"
+                "3. Create a Unique Password using a mixture of both GUID and Characters (32 Letters in Length, Secure)\n" +
+                "4. Create a Unique Password using Cryptography (16 Letters in Length, Very Secure)\n" +
+                "5. Exit\n"
                 );
 
                 // User selection
@@ -45,22 +65,16 @@ namespace RandomPWGen
                 switch (num)
                 {
                     case 1:
-                        Thread doThing = new Thread(() => password = GeneratePWsGUID());
-                        doThing.Start();
-                        doThing.Join();
-
-                        Console.WriteLine("\tWould you like to copy the password to the clipboard?\n\t Yes or No?\n\t");
+                        Thread strongPW = new Thread(() => password = GeneratePWsGUID());
+                        strongPW.Start();
+                        strongPW.Join();
                         CopyToClip(password);
                         break;
 
                     case 2:
-                        // Set password
-                        Thread doThingAgain = new Thread(() => password = GeneratePWs());
-                        doThingAgain.Start();
-                        doThingAgain.Join();
-                        
-                        //Console.WriteLine($"\tPassword: {password}\n");
-                        Console.WriteLine("\tWould you like to copy the password to the clipboard?\n\t Yes or No?\n\t");
+                        Thread strongerPW = new Thread(() => password = GeneratePWs());
+                        strongerPW.Start();
+                        strongerPW.Join();
                         CopyToClip(password);
                         break;
 
@@ -106,7 +120,7 @@ namespace RandomPWGen
             }
             catch (Exception e) 
             {
-                Console.WriteLine("");
+                Console.WriteLine(e.Message);
                 return "";
             }
         }
@@ -154,37 +168,40 @@ namespace RandomPWGen
             Console.WriteLine("\tWould you like to copy the password to the clipboard?\n\t Yes or No?\n\t");
             string response = Console.ReadLine();
 
+
             // If input is yes, copy to clipboard
-            if (response == "Y" || response == "y" || response == "yes" || response == "Yes")
+            switch (response)
             {
-                try
-                {
-                    Thread thread = new Thread(() => Clipboard.SetText(password));
-                    Console.WriteLine("\tPassword Copied to Clipboard!\n");
-                    thread.SetApartmentState(ApartmentState.STA);
-                    thread.Start();
-                    thread.Join();
-                }
-                catch 
-                {
-                    Console.WriteLine("Error copying to clipboard\n");
-                }
-            }
+                case "Y":
+                case "y":
+                case "yes":
+                case "Yes":
+                    try
+                    {
+                        Thread thread = new Thread(() => Clipboard.SetText(password));
+                        Console.WriteLine("\tPassword Copied to Clipboard!\n");
+                        thread.SetApartmentState(ApartmentState.STA);
+                        thread.Start();
+                        thread.Join();
+                    }
+                    catch
+                    {
+                        Console.WriteLine("Error copying to clipboard\n");
+                    }
+                    break;
 
-            // "No" input, do not copy to clipboard
-            else if (response == "N" || response == "n" || response == "No" || response == "no")
-            {
-                Console.WriteLine("\tPassword Not Copied to Clipboard!\n");
-            }
-
-            // Invalid Options recieved
-            else
-            {
-                Console.WriteLine("\tInvalid Response!\n");
+                case "N":
+                case "n":
+                case "No":
+                case "no":
+                    Console.WriteLine("\tPassword Not Copied to Clipboard!\n");
+                    break;
             }
         }
 
-        // Using Cryptography to generate a password
+        //METHOD: GeneratePWsCrypt
+        //PURPOSE: Generates an Encrypted Password
+        //RETURNS: string password
         private string GeneratePWsCrypt()
         {
             try
@@ -204,5 +221,12 @@ namespace RandomPWGen
                 return "";
             }
         }
+
+
+        //private void WriteFile(string content, string password)
+        //{
+
+        //}
+
     }
 }
